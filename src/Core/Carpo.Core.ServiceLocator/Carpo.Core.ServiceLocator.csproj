@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net6.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <GenerateDocumentationFile>False</GenerateDocumentationFile>
+	  <DocumentationFile>bin\</DocumentationFile>
+	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	  <AssemblyVersion>3.0.0.0</AssemblyVersion>
+	  <FileVersion>3.0.0.0</FileVersion>
+	  <Version>$(AssemblyVersion)</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Carpo.Core.Interface\Carpo.Core.Interface.csproj" />
+  </ItemGroup>
+
+</Project>
