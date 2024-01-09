@@ -13,7 +13,7 @@
 	  <PackageId>carpo.core</PackageId>
 	  <Authors>Romulo Ribeiro</Authors>
 	  <Company>Carpo</Company>
-	  <RepositoryUrl>https://github.com/romuloar/carpo/</RepositoryUrl>
+	  <RepositoryUrl>https://github.com/romuloar/carpo.core</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
