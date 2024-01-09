@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         project:
-          - src/Carpo.Core
+          - /src/Carpo.Core
           # Adicione os nomes dos seus projetos aqui
 
     steps:
