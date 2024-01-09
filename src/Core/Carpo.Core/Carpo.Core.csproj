@@ -10,6 +10,10 @@
 	  <AssemblyVersion>3.0.0.0</AssemblyVersion>
 	  <FileVersion>3.0.0.0</FileVersion>
 	  <Version>$(AssemblyVersion)</Version>
+	  <PackageId>carpo.core</PackageId>
+	  <Authors>Romulo Ribeiro</Authors>
+	  <Company>Carpo</Company>
+	  <RepositoryUrl>https://github.com/romuloar/carpo/</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
