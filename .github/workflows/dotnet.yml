@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         project:
-          - Carpo.Core
+          - src/Carpo.Core
           # Adicione os nomes dos seus projetos aqui
 
     steps:
@@ -27,7 +27,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore ${{ matrix.project }}/*.csproj
+      run: dotnet restore ${{ matrix.project }}.csproj
     - name: Package generation
       run: dotnet build -c Release -o out ${{ matrix.project }}
     - name: Push in nuget
