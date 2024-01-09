@@ -5,8 +5,10 @@ name: .NET
 
 on:
   workflow_dispatch:
+  
+permissions:
+    packages: write
     
-
 jobs:
   build:
 
