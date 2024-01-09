@@ -1,0 +1,35 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+name: .NET
+
+on:
+  workflow_dispatch:
+  
+permissions:
+  packages: write
+    
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project:
+          - src/Core/Carpo.Core.Interface
+          # Adicione outros projetos conforme necessário
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore ${{ matrix.project }}/*.csproj
+    - name: Package generation
+      run: dotnet build -c Release -o ${{ matrix.project }}/out ${{ matrix.project }}
+    - name: Push in nuget
+      run: |
+        cd ${{ matrix.project }}/out
+        dotnet nuget push *.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/romuloar/index.json" --skip-duplicate
