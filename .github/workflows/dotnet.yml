@@ -7,12 +7,18 @@ on:
   workflow_dispatch:
   
 permissions:
-    packages: write
+  packages: write
     
 jobs:
   build:
 
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project:
+          - Carpo.Core
+          # Adicione os nomes dos seus projetos aqui
 
     steps:
     - uses: actions/checkout@v3
@@ -21,10 +27,10 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ${{ matrix.project }}/*.csproj
     - name: Package generation
-      run: dotnet build -c Release -o out
+      run: dotnet build -c Release -o out ${{ matrix.project }}
     - name: Push in nuget
       run: |
-        cd out
+        cd ${{ matrix.project }}/out
         dotnet nuget push *.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/romuloar/index.json" --skip-duplicate
