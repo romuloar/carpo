@@ -7,18 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Carpo.Core" Version="3.0.0" />
+    <PackageReference Include="Carpo.Core.Extension" Version="3.0.0" />
+    <PackageReference Include="Carpo.Core.Interface" Version="3.0.0" />
+    <PackageReference Include="Carpo.Core.ServiceLocator" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Carpo.Core.Extension\Carpo.Core.Extension.csproj" />
-    <ProjectReference Include="..\Carpo.Core.Interface\Carpo.Core.Interface.csproj" />
-    <ProjectReference Include="..\Carpo.Core.ServiceLocator\Carpo.Core.ServiceLocator.csproj" />
-    <ProjectReference Include="..\Carpo.Core\Carpo.Core.csproj" />
   </ItemGroup>
 
 </Project>

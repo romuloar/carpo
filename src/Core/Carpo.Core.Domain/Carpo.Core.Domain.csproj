@@ -13,8 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Carpo.Core.Extension\Carpo.Core.Extension.csproj" />
-    <ProjectReference Include="..\Carpo.Core.Interface\Carpo.Core.Interface.csproj" />
+    <PackageReference Include="Carpo.Core.Extension" Version="3.0.0" />
+    <PackageReference Include="Carpo.Core.Interface" Version="3.0.0" />
   </ItemGroup>
 
 </Project>

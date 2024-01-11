@@ -7,13 +7,13 @@
 	  <GenerateDocumentationFile>False</GenerateDocumentationFile>
 	  <DocumentationFile>bin\</DocumentationFile>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	  <AssemblyVersion>3.0.0.0</AssemblyVersion>
-	  <FileVersion>3.0.0.0</FileVersion>
+	  <AssemblyVersion>1.0.0.0</AssemblyVersion>
+	  <FileVersion>1.0.0.0</FileVersion>
 	  <Version>$(AssemblyVersion)</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Carpo.Core.Interface\Carpo.Core.Interface.csproj" />
+    <PackageReference Include="Carpo.Core.Interface" Version="3.0.0" />
   </ItemGroup>
 
 </Project>
