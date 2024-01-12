@@ -35,6 +35,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Carpo.Data.EFCore.Repositor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Carpo.Data.EFCore.Test", "src\Data\Carpo.Data.EFCore.Test\Carpo.Data.EFCore.Test.csproj", "{478C17C5-735B-48AE-B2D3-7D1D3B81BCEC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_resources", "_resources", "{A845755B-9FA6-42A7-8D0B-5FFE18B0E029}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{71D33275-DE51-4716-A29D-E2FD0F871E68}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\..\Users\rom\Pictures\carpo-logo.jpeg = ..\..\..\..\Users\rom\Pictures\carpo-logo.jpeg
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +103,7 @@ Global
 		{DF95C871-5692-4763-8A2D-BCB703A4D7F9} = {1A03D2C7-0C02-466E-885A-04B1F5BDE1A3}
 		{277EEA2A-7EBF-4E31-ACE9-62B2A68A643A} = {1A03D2C7-0C02-466E-885A-04B1F5BDE1A3}
 		{478C17C5-735B-48AE-B2D3-7D1D3B81BCEC} = {1A03D2C7-0C02-466E-885A-04B1F5BDE1A3}
+		{71D33275-DE51-4716-A29D-E2FD0F871E68} = {A845755B-9FA6-42A7-8D0B-5FFE18B0E029}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D18D4216-569B-4E2A-9E39-A246590A69C8}
