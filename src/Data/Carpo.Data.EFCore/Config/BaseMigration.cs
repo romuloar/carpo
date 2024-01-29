@@ -8,11 +8,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Carpo.Data.EFCore.Config
 {
     /// <summary>
-    /// Classe base para a geração de script
+    /// Class to generate database documentation
     /// </summary>
     public class BaseMigration : Migration
     {
-        internal MigrationBuilder _migrationBuilder;
+        /// <summary>
+        /// 
+        /// </summary>
+        internal MigrationBuilder? _migrationBuilder;
 
         //public BaseMigration()
         //{
@@ -28,12 +31,12 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Gera o script de crição dos campos Idx, unique e as descrições de tabelas e colunas.
+        /// Generate the script for creating the Index, unique fields and table and column descriptions.
         /// </summary>
-        public void GenerateScriptCustom(MigrationBuilder migrationBuilder)
+        public void GenerateCustomScript(MigrationBuilder migrationBuilder)
         {
             _migrationBuilder = migrationBuilder;
-            if(_migrationBuilder != null)
+            if (_migrationBuilder != null)
             {
                 var listType = GetListDomainType();
                 if (listType.Any())
@@ -73,11 +76,11 @@ namespace Carpo.Data.EFCore.Config
                 }
                 _migrationBuilder.Sql("--------------------------------->>END SCRIPT ");
             }
-         
+
         }
 
         /// <summary>
-        /// Adiciona os script de criação dos domínios de cada Idx
+        /// Add the domain creation script for each Idx
         /// </summary>        
         internal void AddCheckIdxScript(Type typeDomain, DomainClassDescription descriptionTable)
         {
@@ -92,7 +95,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Adiciona os script de alteração de constraints (Pk e Fk), caso exista
+        /// Add the constraints change script (Pk and Fk), if any one.
         /// </summary>        
         internal void AlterConstraintPk(DomainClassDescription descriptionTable)
         {
@@ -107,7 +110,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Adiciona os script de alteração de constraints (Pk e Fk), caso exista
+        /// Add constraints change scripts (Pk and Fk), if available
         /// </summary>        
         internal void AlterConstraintFk(DomainClassDescription descriptionTable)
         {
@@ -125,7 +128,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Adiciona os script de descrição das propriedades da classe Domain
+        /// Add the Domain class property description script
         /// </summary>        
         internal void AddDescriptionScript(Type typeDomain, DomainClassDescription descriptionTable)
         {
@@ -173,7 +176,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Adiciona ao script a constraint unique, caso exista algum campo marcado com o atributo Unique 
+        /// Add the unique constraint to the script, if there is a field marked with the Unique attribute
         /// </summary>        
         internal void AddUniqueScript(Type typeDomain, DomainClassDescription descriptionTable)
         {
@@ -194,7 +197,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Monta o script dos campos unique
+        /// Create the unique fields script
         /// </summary>  
         internal string MountUniqueScript(DomainClassDescription domainDescription, List<string> listColumnName)
         {
@@ -208,7 +211,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Monta o script de check para os campos Idc
+        /// Create the check script for the Idc fields
         /// </summary>  
         internal string MountCheckIdcScript(string columnName, DomainClassDescription domainDescription, List<IIdx> listIdc)
         {
@@ -222,7 +225,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Monta o script de descrição da coluna
+        /// Create the column description script
         /// </summary>  
         internal string MountDescriptionScript(string descriptionColumn, string columnName, DomainClassDescription domainDescription)
         {
@@ -234,7 +237,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Lista os domínios do tipo IValidationDomain
+        /// List domains of type IValidationDomain
         /// </summary>        
         internal List<Type> GetListDomainType()
         {
@@ -247,7 +250,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Monta o script de descrição da tabela
+        /// Create the table description script
         /// </summary>        
         internal string MountTableDescriptionScript(DomainClassDescription domainDescription)
         {
@@ -258,7 +261,7 @@ namespace Carpo.Data.EFCore.Config
         }
 
         /// <summary>
-        /// Alterra o nome da constraint do campo de chave primária
+        /// Change the name of the primary key field constraint
         /// </summary>        
         internal void AlterConstraintPkScript(DomainClassDescription domainDescription, DomainPropertyDescription domainPropertyDescription)
         {
@@ -275,12 +278,12 @@ namespace Carpo.Data.EFCore.Config
             string schemaTable = string.Format(@"{0}.{1}"
                                                 , domainDescription.SchemaName
                                                 , domainDescription.TableName);
-            _migrationBuilder.DropPrimaryKey(name: nameConstraintPk, table: domainDescription.TableName, schema:schemaTable);
+            _migrationBuilder.DropPrimaryKey(name: nameConstraintPk, table: domainDescription.TableName, schema: schemaTable);
             _migrationBuilder.AddPrimaryKey(name: nameConstraintPk, table: domainDescription.TableName, column: namePk);
         }
 
         /// <summary>
-        /// Altera o nome da constraint do campo de chave estrangeira
+        /// Change the name of the foreign key field constraint
         /// </summary>        
         internal void AddConstraintFkScript(DomainClassDescription domainDescription, DomainPropertyDescription domainPropertyDescription)
         {
@@ -305,21 +308,14 @@ namespace Carpo.Data.EFCore.Config
             string principalTable = string.Format(@"[{0}].{1}"
                                     , domainPropertyDescription.DomainPropertyConstraintFk.SchemaTableNameReference
                                     , domainPropertyDescription.DomainPropertyConstraintFk.TableNameReference);
-            
+
             _migrationBuilder.AddForeignKey(
-                name : nameReferenceFk,
+                name: nameReferenceFk,
                 table: domainDescription.TableName,
                 columns: new string[] { nameColumnFk },
                 principalTable: principalTable,
-                schema : schemaTable);
+                schema: schemaTable);
 
-            //_migrationBuilder.AddForeignKey(
-            //        schemaTable,
-            //        nameColumnFk,
-            //        principalTable,
-            //        nameReferenceFk,
-            //        false,
-            //        domainPropertyDescription.DomainPropertyConstraintFk.ConstraintNameFk);
         }
     }
 }

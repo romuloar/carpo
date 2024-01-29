@@ -7,6 +7,9 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Copyright>Carpo</Copyright>
     <PackageIcon>carpo-logo.jpeg</PackageIcon>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <FileVersion>1.0.1</FileVersion>
+    <Version>$(AssemblyVersion)</Version>
   </PropertyGroup>
 
   <ItemGroup>
