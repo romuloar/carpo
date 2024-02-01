@@ -22,11 +22,7 @@ namespace Carpo.Core.Domain.DomainDescription
             {
                 throw new ArgumentException("O tipo da entidade não representa uma classe");
             }
-            if (type.BaseType.Name != "BaseDomain")
-            {
-                throw new ArgumentException("É necessário que a classe herde de BaseDomain.");
-            }
-
+         
             XmlElement xmlDomainClass = GetXmlDescriptionClass(type);
 
             bool isView = (xmlDomainClass["isView"] != null);
