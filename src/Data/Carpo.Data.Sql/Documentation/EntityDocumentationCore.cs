@@ -1,64 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Carpo.Data.Sql.Documentation.DataTransfer;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
-namespace Carpo.Core.Domain.DomainDescription
+namespace Carpo.Data.Sql.Documentation
 {
     /// <summary>
-    /// Classe para a captura das descrições das classes e propriedades de domínio
+    /// Class for capturing descriptions of domain classes and properties
     /// </summary>
-    public static class DomainDescriptionCore
+    public static class EntityDocumentationCore
     {
         /// <summary>
-        /// Monta a classe DomainClassDescription
+        /// Constructs the DomainClassDescription class
         /// </summary>        
-        public static DomainClassDescription GetDomainClassDescription(Type type, bool isLoadProperties = true)
+        public static EntityDescriptionDataTransfer GetDomainClassDescription(Type type, bool isLoadProperties = true)
         {
             if (!type.IsClass)
             {
-                throw new ArgumentException("O tipo da entidade não representa uma classe");
+                throw new ArgumentException("The entity type does not represent a class");
             }
-         
+
             XmlElement xmlDomainClass = GetXmlDescriptionClass(type);
-
-            bool isView = (xmlDomainClass["isView"] != null);
-            string description = xmlDomainClass["summary"] == null ? "" : xmlDomainClass["summary"].InnerText.Trim();
-            string tableName = xmlDomainClass["nameEntity"] == null ? type.Name + "" : xmlDomainClass["nameEntity"].InnerText.Trim();
-            string schemaName = xmlDomainClass["groupName"] == null ? "dbo" : xmlDomainClass["groupName"].InnerText.Trim();
-
+            string description = "";
+            string entityName = type.Name;
+            string groupName = "dbo";
+            if (xmlDomainClass != null)
+            {
+                description = xmlDomainClass["summary"] == null ? "" : xmlDomainClass["summary"].InnerText.Trim();
+                entityName = xmlDomainClass["nameEntity"] == null ? type.Name + "" : xmlDomainClass["nameEntity"].InnerText.Trim();
+                groupName = xmlDomainClass["groupName"] == null ? "dbo" : xmlDomainClass["groupName"].InnerText.Trim(); 
+            }
+            bool isView = (xmlDomainClass != null && xmlDomainClass["isView"] != null);
+            
             if (isView)
             {
-                return new DomainClassDescription(schemaName, tableName, description, new List<DomainPropertyDescription>(), isView);
+                return new EntityDescriptionDataTransfer(groupName, entityName, description, new List<EntityPropertyDescriptionDataTransfer>(), isView);
             }
 
-            if (xmlDomainClass["summary"] == null)
-            {
-                throw new ArgumentException("É necessário definir a tag de comentário summary na classe de domínio");
-            }
-
-            if (xmlDomainClass["nameEntity"] == null)
-            {
-                throw new ArgumentException("É necessário definir a tag de comentário nameEntity na classe de domínio");
-            }
-
-            //if (xmlDomainClass["groupName"] == null)
-            //{
-            //    throw new ArgumentException("É necessário definir a tag de comentário schemaName na classe de domínio");
-            //}
-
-            return new DomainClassDescription(schemaName, tableName, description, isLoadProperties ? GetListDomainPropertyDescription(type, tableName, schemaName) : null);
+            return new EntityDescriptionDataTransfer(groupName, entityName, description, isLoadProperties ? GetListDomainPropertyDescription(type, entityName, groupName) : null);
         }
 
         /// <summary>
-        /// Busca a lista de descrições das propriedades de domínio
+        /// Retrieves the list of domain property descriptions
         /// </summary>        
-        public static List<DomainPropertyDescription> GetListDomainPropertyDescription(Type typeDomain, string tableName, string schemaName)
+        public static List<EntityPropertyDescriptionDataTransfer> GetListDomainPropertyDescription(Type typeDomain, string tableName, string schemaName)
         {
-            List<DomainPropertyDescription> listDomainPropertyDescription = new List<DomainPropertyDescription>();
+            List<EntityPropertyDescriptionDataTransfer> listDomainPropertyDescription = new List<EntityPropertyDescriptionDataTransfer>();
 
             foreach (var prop in typeDomain.GetProperties())
             {
@@ -73,11 +59,11 @@ namespace Carpo.Core.Domain.DomainDescription
                 }
                 catch (Exception exc)
                 {
-                    string msgErro = exc.InnerException != null ?
+                    string errorMessage = exc.InnerException != null ?
                                         exc.InnerException.InnerException != null ? exc.InnerException.InnerException.Message
                                         : exc.InnerException.Message
                                     : exc.Message;
-                    exc = new Exception("ERROR: Property > " + prop.Name + " MSG: " + msgErro);
+                    exc = new Exception("ERROR: Property > " + prop.Name + " MSG: " + errorMessage);
                     throw exc;
                 }
             }
@@ -86,7 +72,7 @@ namespace Carpo.Core.Domain.DomainDescription
         }
 
         /// <summary>
-        /// Verifica se a propriedade tem a DataAnnotations KeyAttribute
+        /// Checks if the property has the DataAnnotations KeyAttribute
         /// </summary>     
         public static bool IsPropertyPrimaryKey(PropertyInfo prop)
         {
@@ -95,13 +81,13 @@ namespace Carpo.Core.Domain.DomainDescription
         }
 
         /// <summary>
-        /// Busca a descrição da propriedade.
+        /// Retrieves the property description.
         /// </summary>        
-        public static DomainPropertyDescription GetDomainPropertyDescription(PropertyInfo property, string tableName, string schemaName)
+        public static EntityPropertyDescriptionDataTransfer GetDomainPropertyDescription(PropertyInfo property, string tableName, string schemaName)
         {
             XmlElement xmlElement = GetXmlDescriptionProperty(property);
 
-            return new DomainPropertyDescription
+            return new EntityPropertyDescriptionDataTransfer
             {
                 PropertyName = property.Name,
                 PropertyTypeName = property.PropertyType.Name,
@@ -114,16 +100,16 @@ namespace Carpo.Core.Domain.DomainDescription
         }
 
         /// <summary>
-        /// Busca as informações de chave primária caso existam. Caso não exista retorna NULL
+        /// Retrieves the primary key information if it exists. Returns NULL if it doesn't exist.
         /// </summary>        
-        internal static DomainPropertyConstraintPk GetDomainPropertyConstraintPk(XmlElement xmlElement)
+        internal static EntityPropertyConstraintPkDataTransfer GetDomainPropertyConstraintPk(XmlElement xmlElement)
         {
             if (xmlElement["constraintNamePk"] != null || xmlElement["nameKey"] != null)
             {
                 string namePk = (xmlElement["nameKey"] == null) ? null : xmlElement["nameKey"].InnerText.Trim();
                 string constraintNamePk = (xmlElement["constraintNamePk"] == null) ? null : xmlElement["constraintNamePk"].InnerText.Trim();
 
-                return new DomainPropertyConstraintPk
+                return new EntityPropertyConstraintPkDataTransfer
                 {
                     ConstraintNamePk = constraintNamePk,
                     NamePk = namePk
@@ -133,13 +119,13 @@ namespace Carpo.Core.Domain.DomainDescription
         }
 
         /// <summary>
-        /// Busca as informações de chave estrangeira caso exista. Caso não exista retorna NULL
+        /// Retrieves the foreign key information if it exists. Returns NULL if it doesn't exist.
         /// </summary>        
-        internal static DomainPropertyConstraintFk GetDomainPropertyConstraintFk(XmlElement xmlElement, string tableName, string schemaName)
+        internal static EntityPropertyConstraintFkDataTransfer GetDomainPropertyConstraintFk(XmlElement xmlElement, string tableName, string schemaName)
         {
-            DomainPropertyConstraintFk domainPropertyConstraintFk =
+            EntityPropertyConstraintFkDataTransfer domainPropertyConstraintFk =
             (xmlElement["tableNameReference"] != null)
-            ? new DomainPropertyConstraintFk
+            ? new EntityPropertyConstraintFkDataTransfer
             {
                 ConstraintNameFk = xmlElement["constraintNameFk"] == null
                                         ? "FK_" + tableName.Trim() + "_" + xmlElement["tableNameReference"].InnerText.Trim()
@@ -158,7 +144,7 @@ namespace Carpo.Core.Domain.DomainDescription
         }
 
         /// <summary>
-        /// Busca o nó xml do summary, schemaTable e tableName da classe de domínio
+        /// Retrieves the XML node of the class summary, schemaTable, and tableName
         /// </summary>   
         internal static XmlElement GetXmlDescriptionClass(Type type)
         {
@@ -167,7 +153,7 @@ namespace Carpo.Core.Domain.DomainDescription
         }
 
         /// <summary>
-        /// Busca o nó xml do summary da propriedade do domínio
+        /// Retrieves the XML node of the property summary of the domain
         /// </summary>      
         internal static XmlElement GetXmlDescriptionProperty(MemberInfo memberInfo)
         {
@@ -176,7 +162,7 @@ namespace Carpo.Core.Domain.DomainDescription
         }
 
         /// <summary>
-        /// Busca o nó xml da descrição do objeto
+        /// Retrieves the XML node of the object description
         /// </summary>                
         internal static XmlElement GetXmlFromName(Type type, char prefix, string name)
         {
@@ -209,24 +195,24 @@ namespace Carpo.Core.Domain.DomainDescription
 
             if (matchedElement == null)
             {
-                throw new ArgumentException("Cometário não atribuído a propriedade: " + type.Name);
+                throw new ArgumentException("Comment not assigned to property: " + type.Name);
             }
 
             return matchedElement;
         }
 
         /// <summary>
-        /// Cache utilizado para lembrar do arquivo xml do projeto
+        /// Cache used to remember the xml file of the project
         /// </summary>
         internal static Dictionary<Assembly, XmlDocument> cache = new Dictionary<Assembly, XmlDocument>();
 
         /// <summary>
-        /// Cache utilizado para armazenar exceções.
+        /// Cache used to store exceptions.
         /// </summary>
         internal static Dictionary<Assembly, Exception> failCache = new Dictionary<Assembly, Exception>();
 
         /// <summary>
-        /// Busca a documentação xml do projeto do cache de armazenamento.
+        /// Retrieves the xml documentation of the project from the storage cache.
         /// </summary>      
         internal static XmlDocument GetXmlDocumentFromAssembly(Assembly assembly)
         {
@@ -251,7 +237,7 @@ namespace Carpo.Core.Domain.DomainDescription
         }
 
         /// <summary>
-        /// Busca a documentação xml do projeto gerado.
+        /// Retrieves the generated project's xml documentation.
         /// </summary>        
         internal static XmlDocument GetXmlDocumentFromAssemblyNonCached(Assembly assembly)
         {
@@ -282,4 +268,5 @@ namespace Carpo.Core.Domain.DomainDescription
             }
         }
     }
+
 }

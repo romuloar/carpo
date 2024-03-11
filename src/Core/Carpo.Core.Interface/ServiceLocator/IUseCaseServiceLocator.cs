@@ -4,6 +4,6 @@ namespace Carpo.Core.Interface.ServiceLocator
 {
     public interface IUseCaseServiceLocator
     {
-        public TEntity Get<TEntity>(params IContractUseCase[] list) where TEntity : IUseCaseDomain;
+        public TEntity Get<TEntity>(params IRepositoryUseCase[] list) where TEntity : IApplicationUseCase;
     }
 }

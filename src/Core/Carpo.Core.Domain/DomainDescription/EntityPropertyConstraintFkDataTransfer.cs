@@ -1,34 +1,34 @@
 ﻿namespace Carpo.Core.Domain.DomainDescription
 {
     /// <summary>
-    /// Classe para propriedade que representa uma chave estrangeira
+    /// Class for a property representing a foreign key constraint
     /// </summary>
-    public class DomainPropertyConstraintFk
+    public class EntityPropertyConstraintFkDataTransfer
     {
         /// <summary>
-        /// Nome para a "constraint" de chave estrangeira
+        /// Name for the foreign key constraint
         /// </summary>
         public string ConstraintNameFk { get; set; }
 
         /// <summary>
-        /// Nome para a tabela de referência da chave estrangeira
+        /// Name for the reference table of the foreign key
         /// </summary>
         public string TableNameReference { get; set; }
 
         /// <summary>
-        /// Nome do schema da tabela de referência da chave estrangeira
+        /// Name of the schema of the reference table of the foreign key
         /// </summary>
         public string SchemaTableNameReference { get; set; }
 
         /// <summary>
-        /// Nome da PK da tabela de referência da chave estrangeira, caso seja diferente do padrão Ide+[NOME_DA_TABELA]
+        /// Name of the PK of the reference table of the foreign key, if different from the default Ide+[TABLE_NAME]
         /// </summary>
         public string NamePkTableReference { get; set; }
 
         /// <summary>
-        /// Identifica se existe nome para a "constraint" de chave estrangeira
+        /// Indicates if there is a name for the foreign key constraint
         /// </summary>
         public bool IsConstraintNameFk { get { return !string.IsNullOrEmpty(ConstraintNameFk); } }
-
     }
+
 }

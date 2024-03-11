@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 namespace Carpo.Core.Domain.Extension
 {
     /// <summary>
+    /// todo->translate comments to english and move this class do data layer. I don't know where, maybe I'll need 
+    /// to create a new project.
     /// Métodos de extensão para classes de domínio
     /// </summary>
     public static class ObjectDomain
@@ -51,7 +53,7 @@ namespace Carpo.Core.Domain.Extension
         /// </summary>               
         public static DataTable ToDataTable<TEntity>(this IEnumerable<TEntity> data) where TEntity : BaseDomain
         {
-            DomainClassDescription descriptionTable = DomainDescriptionCore.GetDomainClassDescription(typeof(TEntity));
+            EntityDescriptionDataTransfer descriptionTable = EntityDocumentationCore.GetDomainClassDescription(typeof(TEntity));
             PropertyDescriptorCollection properties = TypeDescriptor.GetProperties(typeof(TEntity));
             var table = new DataTable();
 

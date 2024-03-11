@@ -66,8 +66,11 @@ namespace Carpo.Data.EFCore
 
             Carpo.Data.EFCore.Config.ConfigurationDomain.SetListConfigurations(modelBuilder);
 
-            //modelBuilder.Properties<string>().Configure(p => p.HasColumnType("varchar"));
-            //modelBuilder.Properties<string>().Configure(p => p.HasMaxLength(50));
+            foreach (var property in modelBuilder.Model.GetEntityTypes()
+            .SelectMany(t => t.GetProperties().Where(p => p.ClrType == typeof(string))))
+            {
+                property.SetColumnType("varchar(50)");
+            }
         }      
       
     }

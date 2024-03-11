@@ -1,29 +1,29 @@
-﻿namespace Carpo.Core.Domain.DomainDescription
+﻿namespace Carpo.Data.Sql.Documentation.DataTransfer
 {
     /// <summary>
-    /// Classe para propriedade que representa uma chave primária
+    /// Class for a property representing a primary key
     /// </summary>
-    public class DomainPropertyConstraintPk
+    public class EntityPropertyConstraintPkDataTransfer
     {
         /// <summary>
-        /// Nome para a "constraint" de chave primária
+        /// Name for the primary key constraint
         /// </summary>
         public string ConstraintNamePk { get; set; }
 
         /// <summary>
-        /// Define um nome para a chave primária
+        /// Defines a name for the primary key
         /// </summary>
         public string NamePk { get; set; }
 
         /// <summary>
-        /// Identifica se existe outro nome para a chave primária
+        /// Indicates if there is another name for the primary key
         /// </summary>
         public bool IsNameKey { get { return !string.IsNullOrEmpty(NamePk); } }
 
         /// <summary>
-        /// Identifica se existe nome para a "constraint" de chave primária
+        /// Indicates if there is a name for the primary key constraint
         /// </summary>
         public bool IsConstraintNamePk { get { return !string.IsNullOrEmpty(ConstraintNamePk); } }
-
     }
+
 }

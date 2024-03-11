@@ -1,40 +1,46 @@
-﻿namespace Carpo.Core.Domain.DomainDescription
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Carpo.Data.Sql.Documentation.DataTransfer
 {
     /// <summary>
-    /// Informações da propriedade
+    /// Property information
     /// </summary>
-    public class DomainPropertyDescription
+    public class EntityPropertyDescriptionDataTransfer
     {
         /// <summary>
-        /// Nome do campo
+        /// Field name
         /// </summary>
         public string PropertyName { get; set; }
         /// <summary>
-        /// Descrição do campo
+        /// Field description
         /// </summary>
         public string PropertyDescription { get; set; }
         /// <summary>
-        /// Tipo do campo
+        /// Field type
         /// </summary>
         public string PropertyTypeName { get; set; }
 
         /// <summary>
-        /// Nome da tabela de referência
+        /// Name of the reference table
         /// </summary>
         public string TableNameReference { get; set; }
 
         /// <summary>
-        /// Identifica se é pra gerar a descrição neste campo
+        /// Indicates whether to generate the description in this field
         /// </summary>
         public bool IsGenerateDescription { get; set; }
 
         /// <summary>
-        /// Verifica se a propriedade é uma Pk
+        /// Checks if the property is a PK
         /// </summary>
         public bool IsPropertyPk { get; set; }
 
         /// <summary>
-        /// Verifica se a propriedade é uma Pk
+        /// Checks if the property is a FK
         /// </summary>
         public bool IsPropertyFk
         {
@@ -47,12 +53,13 @@
         /// <summary>
         /// DomainPropertyConstraintPk
         /// </summary>
-        public DomainPropertyConstraintPk DomainPropertyConstraintPk { get; set; }
+        public EntityPropertyConstraintPkDataTransfer DomainPropertyConstraintPk { get; set; }
 
         /// <summary>
         /// DomainPropertyConstraintFk
         /// </summary>
-        public DomainPropertyConstraintFk DomainPropertyConstraintFk { get; set; }
+        public EntityPropertyConstraintFkDataTransfer DomainPropertyConstraintFk { get; set; }
 
     }
+
 }

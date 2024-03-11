@@ -49,9 +49,9 @@ namespace Carpo.Core.Domain
         /// Busca a descrição da classe de domínio e de suas propriedades.
         /// </summary>
         /// <returns></returns>
-        public DomainClassDescription GetDomainClassDescription()
+        public EntityDescriptionDataTransfer GetDomainClassDescription()
         {
-            return DomainDescriptionCore.GetDomainClassDescription(this.GetType());
+            return EntityDocumentationCore.GetDomainClassDescription(this.GetType());
         }
 
         /// <summary>

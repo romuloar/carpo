@@ -7,8 +7,8 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Copyright>Carpo</Copyright>
     <PackageIcon>carpo-logo.jpeg</PackageIcon>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>1.0.1</FileVersion>
+    <AssemblyVersion>1.1.1</AssemblyVersion>
+    <FileVersion>1.1.1</FileVersion>
     <Version>$(AssemblyVersion)</Version>
   </PropertyGroup>
 
@@ -20,8 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Carpo.Core.Domain" Version="3.0.0" />
+    <PackageReference Include="Carpo.Core.Domain" Version="3.0.1" />
     <PackageReference Include="Carpo.Core.Interface" Version="3.0.0" />
+    <PackageReference Include="Carpo.Data.Sql.Documentation" Version="1.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.1">

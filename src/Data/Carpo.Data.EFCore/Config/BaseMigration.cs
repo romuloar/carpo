@@ -1,9 +1,11 @@
 ﻿using Carpo.Core.Domain;
 using Carpo.Core.Domain.Attributes;
 using Carpo.Core.Domain.Attributes.Sql;
-using Carpo.Core.Domain.DomainDescription;
 using Carpo.Core.Interface.Idx;
+using Carpo.Data.Sql.Documentation;
+using Carpo.Data.Sql.Documentation.DataTransfer;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System.Reflection;
 
 namespace Carpo.Data.EFCore.Config
 {
@@ -41,20 +43,20 @@ namespace Carpo.Data.EFCore.Config
                 var listType = GetListDomainType();
                 if (listType.Any())
                 {
-                    _migrationBuilder.Sql("--Criação do dicionário de dados");
-                    _migrationBuilder.Sql("--Criação das constraints check para os campos Idx");
-                    _migrationBuilder.Sql("--Criação das constraints unique");
-                    _migrationBuilder.Sql("--Correção dos nomes das constraints primary key");
-                    _migrationBuilder.Sql("--Correção dos nomes de todas as constraints foreign keys");
+                    _migrationBuilder.Sql("-- Data dictionary creation");
+                    _migrationBuilder.Sql("-- Creation of check constraints for Idx fields");
+                    _migrationBuilder.Sql("-- Creation of unique constraints");
+                    _migrationBuilder.Sql("-- Correction of primary key constraint names");
+                    _migrationBuilder.Sql("-- Correction of all foreign key constraint names");
                 }
                 foreach (var mappingClass in listType)
                 {
-                    DomainClassDescription descriptionTable = DomainDescriptionCore.GetDomainClassDescription(mappingClass);
+                    var descriptionTable = EntityDocumentationCore.GetDomainClassDescription(mappingClass);
                     if (descriptionTable.IsView)
                     {
                         continue;
                     }
-                    _migrationBuilder.Sql("--------------------------------->>Tabela: [" + descriptionTable.SchemaName + "].[" + descriptionTable.TableName + "]");
+                    _migrationBuilder.Sql("--------------------------------->>Table: [" + descriptionTable.GroupName + "].[" + descriptionTable.EntityName + "]");
                     _migrationBuilder.Sql(MountTableDescriptionScript(descriptionTable));
                     AddDescriptionScript(mappingClass, descriptionTable);
                     AddCheckIdxScript(mappingClass, descriptionTable);
@@ -62,12 +64,12 @@ namespace Carpo.Data.EFCore.Config
                     AddFieldDefaultValueScript(mappingClass, descriptionTable);
 
                     //AlterConstraintPk(descriptionTable);
-                    _migrationBuilder.Sql("--------------------------------->>Fim");
+                    _migrationBuilder.Sql("--------------------------------->>END");
                 }
 
                 foreach (var mappingClass in listType)
                 {
-                    DomainClassDescription descriptionTable = DomainDescriptionCore.GetDomainClassDescription(mappingClass);
+                    var descriptionTable = EntityDocumentationCore.GetDomainClassDescription(mappingClass);
                     if (descriptionTable.IsView)
                     {
                         continue;
@@ -82,7 +84,7 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Add the domain creation script for each Idx
         /// </summary>        
-        internal void AddCheckIdxScript(Type typeDomain, DomainClassDescription descriptionTable)
+        internal void AddCheckIdxScript(Type typeDomain, EntityDescriptionDataTransfer descriptionTable)
         {
             foreach (var prop in typeDomain.GetProperties())
             {
@@ -97,7 +99,7 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Add the constraints change script (Pk and Fk), if any one.
         /// </summary>        
-        internal void AlterConstraintPk(DomainClassDescription descriptionTable)
+        internal void AlterConstraintPk(EntityDescriptionDataTransfer descriptionTable)
         {
             foreach (var prop in descriptionTable.ListDomainPropertyDescription)
             {
@@ -112,11 +114,11 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Add constraints change scripts (Pk and Fk), if available
         /// </summary>        
-        internal void AlterConstraintFk(DomainClassDescription descriptionTable)
+        internal void AlterConstraintFk(EntityDescriptionDataTransfer descriptionTable)
         {
             if (descriptionTable.ListDomainPropertyDescription.Any(f => f.IsPropertyFk))
             {
-                _migrationBuilder.Sql("--->>ALTER CONSTRAINT FOREIGN KEY [" + descriptionTable.SchemaName + "].[" + descriptionTable.TableName + "]");
+                _migrationBuilder.Sql("--->>ALTER CONSTRAINT FOREIGN KEY [" + descriptionTable.GroupName + "].[" + descriptionTable.EntityName + "]");
             }
             foreach (var prop in descriptionTable.ListDomainPropertyDescription)
             {
@@ -130,12 +132,12 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Add the Domain class property description script
         /// </summary>        
-        internal void AddDescriptionScript(Type typeDomain, DomainClassDescription descriptionTable)
+        internal void AddDescriptionScript(Type typeDomain, EntityDescriptionDataTransfer descriptionTable)
         {
             foreach (var propertyDescription in descriptionTable.ListDomainPropertyDescription.Where(p => p.IsGenerateDescription).ToList())
             {
-                string columnName = (propertyDescription.DomainPropertyConstraintPk != null && propertyDescription.DomainPropertyConstraintPk.IsNameKey)
-                                        ? propertyDescription.DomainPropertyConstraintPk.NamePk
+                string columnName = (propertyDescription.DomainPropertyPkConstraint != null && propertyDescription.DomainPropertyPkConstraint.IsKeyName)
+                                        ? propertyDescription.DomainPropertyPkConstraint.NamePk
                                         : propertyDescription.PropertyName;
 
                 _migrationBuilder.Sql(MountDescriptionScript(propertyDescription.PropertyDescription, columnName, descriptionTable));
@@ -147,7 +149,7 @@ namespace Carpo.Data.EFCore.Config
         /// </summary>
         /// <param name="typeDomain"></param>
         /// <param name="descriptionTable"></param>
-        internal void AddFieldDefaultValueScript(Type typeDomain, DomainClassDescription descriptionTable)
+        internal void AddFieldDefaultValueScript(Type typeDomain, EntityDescriptionDataTransfer descriptionTable)
         {
             foreach (var prop in typeDomain.GetProperties())
             {
@@ -166,11 +168,11 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Mount Field Default Value Script
         /// </summary>  
-        internal string MountFieldDefaultValueScript(DomainClassDescription domainDescription, string columnName, string customValue)
+        internal string MountFieldDefaultValueScript(EntityDescriptionDataTransfer domainDescription, string columnName, string customValue)
         {
             return string.Format(@"ALTER TABLE [{0}].[{1}] ADD CONSTRAINT DF_{1}_{2} DEFAULT ({3}) FOR [{2}]"
-                                    , domainDescription.SchemaName
-                                    , domainDescription.TableName
+                                    , domainDescription.GroupName
+                                    , domainDescription.EntityName
                                     , columnName
                                     , customValue);
         }
@@ -178,7 +180,7 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Add the unique constraint to the script, if there is a field marked with the Unique attribute
         /// </summary>        
-        internal void AddUniqueScript(Type typeDomain, DomainClassDescription descriptionTable)
+        internal void AddUniqueScript(Type typeDomain, EntityDescriptionDataTransfer descriptionTable)
         {
             List<string> listColumnName = new List<string>();
             foreach (var prop in typeDomain.GetProperties())
@@ -199,13 +201,13 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Create the unique fields script
         /// </summary>  
-        internal string MountUniqueScript(DomainClassDescription domainDescription, List<string> listColumnName)
+        internal string MountUniqueScript(EntityDescriptionDataTransfer domainDescription, List<string> listColumnName)
         {
             string columns = string.Join(",", listColumnName);
 
             return string.Format(@"ALTER TABLE [{0}].[{1}] ADD CONSTRAINT UK_{1}_{2} UNIQUE ({3});"
-                                    , domainDescription.SchemaName
-                                    , domainDescription.TableName
+                                    , domainDescription.GroupName
+                                    , domainDescription.EntityName
                                     , columns.Replace(",", "")
                                     , columns);
         }
@@ -213,13 +215,13 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Create the check script for the Idc fields
         /// </summary>  
-        internal string MountCheckIdcScript(string columnName, DomainClassDescription domainDescription, List<IIdx> listIdc)
+        internal string MountCheckIdcScript(string columnName, EntityDescriptionDataTransfer domainDescription, List<IIdx> listIdc)
         {
             string opcoes = string.Join(",", listIdc.Select(v => v.IdxValue).ToArray()).Replace(",", "','");
 
             return string.Format(@"ALTER TABLE [{0}].[{1}] ADD CONSTRAINT CK_{1}_{2} CHECK ({2} IN ('{3}'));"
-                                    , domainDescription.SchemaName
-                                    , domainDescription.TableName
+                                    , domainDescription.GroupName
+                                    , domainDescription.EntityName
                                     , columnName
                                     , opcoes);
         }
@@ -227,12 +229,12 @@ namespace Carpo.Data.EFCore.Config
         /// <summary>
         /// Create the column description script
         /// </summary>  
-        internal string MountDescriptionScript(string descriptionColumn, string columnName, DomainClassDescription domainDescription)
+        internal string MountDescriptionScript(string descriptionColumn, string columnName, EntityDescriptionDataTransfer domainDescription)
         {
             return string.Format(@"EXEC sp_addextendedproperty 'MS_Description', '{0}','schema', '{1}', 'table', '{2}', 'column', '{3}';"
                                     , descriptionColumn
-                                    , domainDescription.SchemaName
-                                    , domainDescription.TableName
+                                    , domainDescription.GroupName
+                                    , domainDescription.EntityName
                                     , columnName);
         }
 
@@ -241,77 +243,94 @@ namespace Carpo.Data.EFCore.Config
         /// </summary>        
         internal List<Type> GetListDomainType()
         {
-            var type = typeof(BaseDomain);
-            return AppDomain
-                .CurrentDomain
-                .GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => type.IsAssignableFrom(p) && p.IsClass && p.Name != "BaseDomain").ToList();
+            var baseDomainType = typeof(BaseDomain);
+            var directSubclasses = new List<Type>();
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                try
+                {
+                    var typesInAssembly = assembly.GetExportedTypes()
+                        .Where(type => type.BaseType == baseDomainType && type != baseDomainType);
+
+                    directSubclasses.AddRange(typesInAssembly);
+                }
+                catch (NotSupportedException)
+                {
+                    continue;
+                }
+                catch (ReflectionTypeLoadException ex)
+                {
+                    var loaderExceptions = ex.LoaderExceptions;
+                }
+            }
+
+            return directSubclasses;
         }
 
         /// <summary>
         /// Create the table description script
         /// </summary>        
-        internal string MountTableDescriptionScript(DomainClassDescription domainDescription)
+        internal string MountTableDescriptionScript(EntityDescriptionDataTransfer domainDescription)
         {
             return string.Format(@"EXEC sp_addextendedproperty 'MS_Description','{0}', 'schema', '{1}', 'table', '{2}';"
-                                    , domainDescription.TableDescription
-                                    , domainDescription.SchemaName
-                                    , domainDescription.TableName);
+                                    , domainDescription.EntityDescription
+                                    , domainDescription.GroupName
+                                    , domainDescription.EntityName);
         }
 
         /// <summary>
         /// Change the name of the primary key field constraint
         /// </summary>        
-        internal void AlterConstraintPkScript(DomainClassDescription domainDescription, DomainPropertyDescription domainPropertyDescription)
+        internal void AlterConstraintPkScript(EntityDescriptionDataTransfer domainDescription, EntityPropertyDescriptionDataTransfer EntityPropertyDescriptionDataTransfer)
         {
             string namePk =
-                (domainPropertyDescription.DomainPropertyConstraintPk != null && domainPropertyDescription.DomainPropertyConstraintPk.IsNameKey)
-                ? domainPropertyDescription.DomainPropertyConstraintPk.NamePk
-                : domainDescription.TableName + "_Id";
+                (EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint != null && EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint.IsKeyName)
+                ? EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint.NamePk
+                : domainDescription.EntityName + "_Id";
 
             string nameConstraintPk =
-                (domainPropertyDescription.DomainPropertyConstraintPk != null && domainPropertyDescription.DomainPropertyConstraintPk.IsConstraintNamePk)
-                ? domainPropertyDescription.DomainPropertyConstraintPk.ConstraintNamePk
-                : "PK_" + domainDescription.TableName;
+                (EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint != null && EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint.IsPkConstraintName)
+                ? EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint.ConstraintNamePk
+                : "PK_" + domainDescription.EntityName;
 
             string schemaTable = string.Format(@"{0}.{1}"
-                                                , domainDescription.SchemaName
-                                                , domainDescription.TableName);
-            _migrationBuilder.DropPrimaryKey(name: nameConstraintPk, table: domainDescription.TableName, schema: schemaTable);
-            _migrationBuilder.AddPrimaryKey(name: nameConstraintPk, table: domainDescription.TableName, column: namePk);
+                                                , domainDescription.GroupName
+                                                , domainDescription.EntityName);
+            _migrationBuilder.DropPrimaryKey(name: nameConstraintPk, table: domainDescription.EntityName, schema: schemaTable);
+            _migrationBuilder.AddPrimaryKey(name: nameConstraintPk, table: domainDescription.EntityName, column: namePk);
         }
 
         /// <summary>
         /// Change the name of the foreign key field constraint
         /// </summary>        
-        internal void AddConstraintFkScript(DomainClassDescription domainDescription, DomainPropertyDescription domainPropertyDescription)
+        internal void AddConstraintFkScript(EntityDescriptionDataTransfer domainDescription, EntityPropertyDescriptionDataTransfer EntityPropertyDescriptionDataTransfer)
         {
             string nameColumnFk;
-            string nameReferenceFk = domainPropertyDescription.DomainPropertyConstraintFk.NamePkTableReference;
+            string nameReferenceFk = EntityPropertyDescriptionDataTransfer.DomainPropertyFkConstraint.PkNameTableReference;
 
-            if (domainPropertyDescription.IsPropertyPk)
+            if (EntityPropertyDescriptionDataTransfer.IsPropertyPk)
             {
-                nameColumnFk = (domainPropertyDescription.DomainPropertyConstraintPk != null && domainPropertyDescription.DomainPropertyConstraintPk.IsNameKey)
-                                        ? domainPropertyDescription.DomainPropertyConstraintPk.NamePk
-                                        : domainDescription.TableName + "_Id";
+                nameColumnFk = (EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint != null && EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint.IsKeyName)
+                                        ? EntityPropertyDescriptionDataTransfer.DomainPropertyPkConstraint.NamePk
+                                        : domainDescription.EntityName + "_Id";
             }
             else
             {
-                nameColumnFk = domainPropertyDescription.PropertyName;
+                nameColumnFk = EntityPropertyDescriptionDataTransfer.PropertyName;
             }
 
             string schemaTable = string.Format(@"[{0}].{1}"
-                                    , domainDescription.SchemaName
-                                    , domainDescription.TableName);
+                                    , domainDescription.GroupName
+                                    , domainDescription.EntityName);
 
             string principalTable = string.Format(@"[{0}].{1}"
-                                    , domainPropertyDescription.DomainPropertyConstraintFk.SchemaTableNameReference
-                                    , domainPropertyDescription.DomainPropertyConstraintFk.TableNameReference);
+                                    , EntityPropertyDescriptionDataTransfer.DomainPropertyFkConstraint.SchemaTableNameReference
+                                    , EntityPropertyDescriptionDataTransfer.DomainPropertyFkConstraint.TableNameReference);
 
             _migrationBuilder.AddForeignKey(
                 name: nameReferenceFk,
-                table: domainDescription.TableName,
+                table: domainDescription.EntityName,
                 columns: new string[] { nameColumnFk },
                 principalTable: principalTable,
                 schema: schemaTable);

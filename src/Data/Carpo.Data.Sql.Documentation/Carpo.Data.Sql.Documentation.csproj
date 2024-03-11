@@ -4,14 +4,14 @@
 	  <TargetFramework>net6.0</TargetFramework>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <Nullable>enable</Nullable>
-	  <GenerateDocumentationFile>False</GenerateDocumentationFile>
-	  <DocumentationFile>bin\</DocumentationFile>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	  <Copyright>Carpo</Copyright>
-	  <AssemblyVersion>3.1.0.0</AssemblyVersion>
-	  <FileVersion>3.1.0.0</FileVersion>
+	  <PackageIcon>carpo-logo.jpeg</PackageIcon>
+	  <AssemblyVersion>1.0.1</AssemblyVersion>
+	  <FileVersion>1.0.1</FileVersion>
 	  <Version>$(AssemblyVersion)</Version>
   </PropertyGroup>
+
 	<ItemGroup>
 		<None Include="..\..\..\..\..\..\..\Users\rom\Pictures\carpo-logo.jpeg">
 			<Pack>True</Pack>

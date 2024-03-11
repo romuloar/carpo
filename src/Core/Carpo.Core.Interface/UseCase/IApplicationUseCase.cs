@@ -1,6 +1,6 @@
 ﻿namespace Carpo.Core.Interface.UseCase
 {
-    public interface IUseCaseDomain
+    public interface IApplicationUseCase
     {
     }
 }
