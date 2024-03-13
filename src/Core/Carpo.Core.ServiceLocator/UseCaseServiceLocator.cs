@@ -4,7 +4,7 @@ using Carpo.Core.Interface.ServiceLocator;
 using Carpo.Core.Interface.UseCase;
 using Carpo.Core.ServiceLocator.Base;
 
-namespace Carpo.Core.UnitOfWork
+namespace Carpo.Core.ServiceLocator
 {
     /// <summary>
     ///  UnitOfWorkUseCase

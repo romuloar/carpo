@@ -1,6 +1,9 @@
 ﻿using Carpo.Core.Domain;
 using Carpo.Core.Domain.Extension;
+using Carpo.Core.Extension;
+using Carpo.Core.ResultState;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices;
 
 namespace Carpo.Data.EFCore.RepositoryBase
 {
@@ -42,14 +45,14 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// <param name="isAsync">Flag indicating whether the operation is asynchronous.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
         /// <returns>The inserted or updated entity.</returns>
-        private async Task<TEntity> SaveBase<TEntity>(TEntity entity, bool isAsync, bool saveChanges = true) where TEntity : BaseDomain
+        private async Task<ResultStateCore<TEntity>> SaveBase<TEntity>(TEntity entity, bool isAsync, bool saveChanges = true) where TEntity : BaseDomain
         {
             try
             {
-                if (entity == null) return null;
+                if (entity == null) return new ResultStateCore<TEntity> { Message = "Entity is required.", StateType = StateTypeCore.Error };
                 if (!entity.IsValidDomain)
                 {
-                    return entity;
+                    return await entity.GetResultStateErrorAsync("Invalid domain");
                 }
 
                 object[] primaryKeyValues = entity.GetListPrimaryKey();
@@ -78,7 +81,7 @@ namespace Carpo.Data.EFCore.RepositoryBase
                     }
                 }
 
-                return entity;
+                return await entity.GetResultStateSuccessAsync(); ;
             }
             catch (Exception exc)
             {
@@ -93,24 +96,45 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// <param name="entity">The entity to be saved or updated.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
         /// <returns>The saved or updated entity. In the case of an insert, the entity returns with the newly assigned id.</returns>
-        public TEntity Save<TEntity>(TEntity entity, bool saveChanges = true) where TEntity : BaseDomain
+        public async Task<ResultStateCore<TEntity>> Save<TEntity>(TEntity entity, bool saveChanges = true) where TEntity : BaseDomain
         {
             Task.Factory
                 .StartNew(() => SaveBase(entity, false, saveChanges))
-                .Unwrap<TEntity>()
+                .Unwrap()
                 .GetAwaiter()
                 .GetResult();
 
-            return entity;
+            return await entity.GetResultStateSuccessAsync();
         }
 
+        /// <summary>
+        /// (Async) Inserts a new entity or updates changes if the entity was previously queried and attached to the context.
+        /// </summary>
+        /// <param name="entity">The entity to be returned.</param>
+        /// <param name="entity">The entity mapped to be saved or updated.</param>
+        /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
+        /// <returns>The saved or updated entity. In the case of an insert, the entity returns with the newly assigned id.</returns>
+        public async Task<ResultStateCore<TEntity>> SaveAsync<TEntity, TEntityMap>(TEntity entity, bool saveChanges = true) 
+            where TEntity : BaseDomain
+            where TEntityMap : BaseDomain
+        {
+            if (entity == null) return new ResultStateCore<TEntity> { Message = "Entity is required.", StateType = StateTypeCore.Error };
+            TEntityMap map = Activator.CreateInstance<TEntityMap>();
+            entity.CopyProperties(ref map);
+
+            var saveObj = await SaveBase(map, true, saveChanges);
+
+            saveObj.CopyProperties(ref entity);
+
+            return await entity.GetResultStateSuccessAsync();
+        }
         /// <summary>
         /// (Async) Inserts a new entity or updates changes if the entity was previously queried and attached to the context.
         /// </summary>
         /// <param name="entity">The entity to be saved or updated.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
         /// <returns>The saved or updated entity. In the case of an insert, the entity returns with the newly assigned id.</returns>
-        public async Task<TEntity> SaveAsync<TEntity>(TEntity entity, bool saveChanges = true) where TEntity : BaseDomain
+        public async Task<ResultStateCore<TEntity>> SaveAsync<TEntity>(TEntity entity, bool saveChanges = true) where TEntity : BaseDomain
         {
             return await SaveBase(entity, true, saveChanges);
         }
@@ -121,11 +145,11 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// <summary>
         /// Deletes the entity from the database.
         /// </summary>
-        private async Task DeleteBase<TEntity>(TEntity entity, bool saveChanges, bool isAsync) where TEntity : BaseDomain
+        private async Task<ResultStateCore> DeleteBase<TEntity>(TEntity entity, bool saveChanges, bool isAsync) where TEntity : BaseDomain
         {
             try
             {
-                if (entity == null) return;
+                if (entity == null) return new ResultStateCore<TEntity> { Message = "Entity is required.", StateType = StateTypeCore.Error };
 
                 if (Context.Entry(entity).State == EntityState.Detached)
                 {
@@ -145,10 +169,12 @@ namespace Carpo.Data.EFCore.RepositoryBase
                         Context.SaveChanges();
                     }
                 }
+
+                return new ResultStateCore { Message = "Success", StateType = StateTypeCore.Success };
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.InnerException?.Message ?? ex.Message);
+                return await ex.GetResultStateExceptionAsync();
             }
         }
 
@@ -157,19 +183,22 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// </summary>
         /// <param name="where">The deletion condition.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
-        public void Delete<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> where, bool saveChanges = true) where TEntity : BaseDomain
+        public ResultStateCore Delete<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> where, bool saveChanges = true) where TEntity : BaseDomain
         {
+            if (where == null) return new ResultStateCore { Message = "where param is required.", StateType = StateTypeCore.Error };
             var itemsToDelete = GetWhere(where);
 
             foreach (TEntity entity in itemsToDelete)
             {
-                Task.Factory
+                 Task.Factory
                    .StartNew(async () => await DeleteBase(entity, saveChanges, false))
                    .GetAwaiter()
                    .GetResult();
             }
 
             if (saveChanges) Context.SaveChanges();
+
+            return new ResultStateCore { Message = "Success", StateType = StateTypeCore.Success };
         }
 
         /// <summary>
@@ -177,12 +206,14 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// </summary>
         /// <param name="entity">The entity to be removed.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
-        public void Delete<TEntity>(TEntity entity, bool saveChanges = true) where TEntity : BaseDomain
+        public ResultStateCore Delete<TEntity>(TEntity entity, bool saveChanges = true) where TEntity : BaseDomain
         {
             Task.Factory
                    .StartNew(async () => await DeleteBase(entity, saveChanges, false))
                    .GetAwaiter()
                    .GetResult();
+
+            return new ResultStateCore { Message = "Success", StateType = StateTypeCore.Success };
         }
 
         /// <summary>
@@ -190,12 +221,22 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// </summary>
         /// <param name="id">The id of the entity to be removed.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
-        public void DeleteById<TEntity>(object id, bool saveChanges = true) where TEntity : BaseDomain
+        public ResultStateCore DeleteById<TEntity>(object id, bool saveChanges = true) where TEntity : BaseDomain
         {
-            Task.Factory
+            try
+            {
+                Task.Factory
                    .StartNew(async () => await DeleteBase(GetSingleById<TEntity>(id), saveChanges, false))
                    .GetAwaiter()
                    .GetResult();
+
+                return new ResultStateCore { Message = "Success", StateType = StateTypeCore.Success };
+            }
+            catch (Exception exc)
+            {
+                return exc.GetResultStateException();
+            }
+            
         }
 
         /// <summary>
@@ -203,16 +244,26 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// </summary>
         /// <param name="where">The deletion condition.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
-        public async Task DeleteAsync<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> where, bool saveChanges = true) where TEntity : BaseDomain
+        public async Task<ResultStateCore> DeleteAsync<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> where, bool saveChanges = true) where TEntity : BaseDomain
         {
-            var itemsToDelete = GetWhere(where);
-
-            foreach (TEntity entity in itemsToDelete)
+            try
             {
-                await DeleteBase(entity, saveChanges, false);
-            }
+                var itemsToDelete = GetWhere(where);
 
-            if (saveChanges) await SaveChangesAsync();
+                foreach (TEntity entity in itemsToDelete)
+                {
+                    await DeleteBase(entity, saveChanges, false);
+                }
+
+                if (saveChanges) await SaveChangesAsync();
+
+                return new ResultStateCore { Message = "Success", StateType = StateTypeCore.Success };
+            }
+            catch (Exception exc)
+            {
+                return exc.GetResultStateException();
+            }
+            
         }
 
         /// <summary>
@@ -220,9 +271,9 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// </summary>
         /// <param name="entity">The entity to be removed.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
-        public async Task DeleteAsync<TEntity>(TEntity entity, bool saveChanges = true) where TEntity : BaseDomain
+        public async Task<ResultStateCore> DeleteAsync<TEntity>(TEntity entity, bool saveChanges = true) where TEntity : BaseDomain
         {
-            await DeleteBase(entity, saveChanges, false);
+           return await DeleteBase(entity, saveChanges, false);
         }
 
         /// <summary>
@@ -230,9 +281,9 @@ namespace Carpo.Data.EFCore.RepositoryBase
         /// </summary>
         /// <param name="id">The id of the entity to be removed.</param>
         /// <param name="saveChanges">Flag indicating whether to save changes immediately.</param>
-        public async Task DeleteByIdAsync<TEntity>(object id, bool saveChanges = true) where TEntity : BaseDomain
+        public async Task<ResultStateCore> DeleteByIdAsync<TEntity>(object id, bool saveChanges = true) where TEntity : BaseDomain
         {
-            await DeleteBase(GetSingleById<TEntity>(id), saveChanges, false);
+            return await DeleteBase(GetSingleById<TEntity>(id), saveChanges, false);
         }
 
         #endregion

@@ -3,7 +3,7 @@ using Carpo.Core.Interface.Domain;
 using Carpo.Core.Interface.ServiceLocator;
 using Carpo.Core.ServiceLocator.Base;
 
-namespace Carpo.Core.UnitOfWork
+namespace Carpo.Core.ServiceLocator
 {
     /// <summary>
     /// Application class - UnitOfWorkApplication
