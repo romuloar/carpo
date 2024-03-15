@@ -17,17 +17,40 @@ namespace Carpo.Data.EFCore
         /// <summary>
         /// Contructor
         /// </summary>        
-        public CarpoContext(string nameFile, string nameContext) => _connectionString = Config.ConfigurationDomain.GetConnectionString(nameFile, nameContext); 
+        public CarpoContext(string nameFile, string nameContext) => _connectionString = Config.ConfigurationDomain.GetConnectionString(nameFile, nameContext);
 
         /// <summary>
-        /// Constructor
+        /// 
         /// </summary>
+        /// <param name="options"></param>
+        public CarpoContext(DbContextOptions options) : base(options)
+        {
+           
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="optionsBuilder"></param>
+        /// <param name="nameContext"></param>
+        public CarpoContext(DbContextOptionsBuilder optionsBuilder, string nameContext) : base(optionsBuilder.Options)
+        {
+            _connectionString = Config.ConfigurationDomain.GetConnectionString(nameContext);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nameContext"></param>
         public CarpoContext(string nameContext)
         {
             _connectionString = Config.ConfigurationDomain.GetConnectionString(nameContext);
            // _modelBuilder = this._modelBuilder ?? new ModelBuilder();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public CarpoContext()
         {
             _connectionString = Config.ConfigurationDomain.GetConnectionString("CarpoContext");
@@ -35,7 +58,10 @@ namespace Carpo.Data.EFCore
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_connectionString);
+            if(!string.IsNullOrEmpty(_connectionString))
+            {
+                optionsBuilder.UseSqlServer(_connectionString);
+            }
         }
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
